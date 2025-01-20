@@ -5,4 +5,159 @@ date: "`r Sys.Date()`"
 output: pdf_document
 ---
 
-## 
+# Introduction:
+
+You can conduct basic math as follows:
+
+```{r}
+# you can conduct basic math
+x <- 3 + sin(pi/2)
+
+# you can also conduct more complicated mathematical 
+sqrt(x)
+
+# you can also save strings dynamically
+z <- "word"
+```
+
+## Sequences:
+
+Sequences are functional in programming such as looping. They can be made using the `seq()` function.
+
+```{r}
+v <- seq(1, 10)
+# another easier way of making sequences:
+v1 <- 1:10
+```
+
+## Vectors: 
+
+You can create vectors of data, which can include numbers, characters and other kinds of types as well:
+
+```{r}
+w <- c(12, 1, 2, 3)
+
+# you can also sort vectors using the sort() function
+sort(w)
+
+```
+
+As you can see, `w` itself does not change because the `sort()` function does apply in place. So, to store this newer version, you need to save it again:
+
+```{r}
+w <- sort(w)
+```
+
+You can also do **indexing over a vector:**
+
+```{r}
+w[1]
+```
+
+Note that the indexing in R starts with one and not zero, like in other languages. Additionally, you can conduct scalar multiplications on vectors:
+
+```{r}
+w*2
+```
+
+You conduct more complex matrix methods such as inner product and matrix multiplications.
+
+```{r}
+# for doing inner-products
+w %*% w
+```
+
+## Data Formatting:
+
+Usually, you will get data with the wrong data types, and you need to format the data before such as:
+
+```{r}
+A <- as.character(c(1, 2, 3, 4, 5))
+typeof(A)
+```
+
+Here, you have vector numbers, but they are saved as characters. So, we use two auxiliary functions to identify two main attributes of a variable:
+
+1.  Length of the vector: `length()` returns the length of the vector.
+2.  Data Type of the vector elements: `typeof()` returns the variable's data type.
+
+```{r}
+length_a <- length(A)
+typeof_a <- typeof(A)
+print(paste0("The vector A is of length", length_a, "and has the data type of ", typeof(A)))
+```
+
+**Coercion:** It is the process of forcing data of one datatype to another datatype
+
+### Loops: 
+
+You can also conduct for-loops using the `for(){}` function to write loops. They have the common syntax as:
+
+```{r}
+for (i in 1:10){
+  print(paste0("Printing loop:", i))
+}
+```
+
+## Packages: 
+
+To get external functions, we need to use the `install.packages("")` function to install the packages.
+
+We will primarily use the `tidyverse()` package because it contains most of the other packages for the stuff we are going to do.
+
+```{r}
+# loading the tidyverse package
+library(tidyverse)
+```
+
+### Plotting with `ggplot2()`
+
+Let us load the `mpg` data set from the `tidyverse` package. And let us conduct basic plotting:
+
+```{r}
+cars <- mpg
+
+
+# example ggplot with linear regressions
+ggplot(data = cars) +
+  geom_point(mapping = aes(x=displ, y=hwy, xlab= "Display", ylab="Highway"))+
+  geom_smooth(method = "lm", mapping = aes(x=displ, y=hwy))+
+  labs(y="Highway", x = "display", title="My first Ggplot2")+
+  theme_minimal()
+```
+
+## Introduction to Markdown:
+
+You can write bulleted lists as:
+
+-   Item 1
+
+-   item 2
+
+-   item 2
+
+You can also write numbered lists as:
+
+1.  Item 1
+2.  Item 2
+3.  Item 3
+
+### Code Blocks:
+
+You can write code-blocks using the ```` ```{r} ```` and it looks like the following:
+
+```{r}
+print("This is a code block")
+```
+
+### Math: 
+
+You can write two types of math:
+
+1.  Inline math: You do it using "\\\$\\\$" symbols. It works such as $y = mx + c$
+
+2.  MathJAX Block: You can do it using double dollar signs:
+
+    $$
+    \textbf{Y} = \textbf{X}\beta + \epsilon
+    $$\
