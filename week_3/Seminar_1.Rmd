@@ -30,7 +30,7 @@ v <- seq(1, 10)
 v1 <- 1:10
 ```
 
-## Vectors: 
+## Vectors:
 
 You can create vectors of data, which can include numbers, characters and other kinds of types as well:
 
@@ -89,7 +89,7 @@ print(paste0("The vector A is of length", length_a, "and has the data type of ",
 
 **Coercion:** It is the process of forcing data of one datatype to another datatype
 
-### Loops: 
+### Loops:
 
 You can also conduct for-loops using the `for(){}` function to write loops. They have the common syntax as:
 
@@ -99,7 +99,7 @@ for (i in 1:10){
 }
 ```
 
-## Packages: 
+## Packages:
 
 To get external functions, we need to use the `install.packages("")` function to install the packages.
 
@@ -150,7 +150,7 @@ You can write code-blocks using the ```` ```{r} ```` and it looks like the follo
 print("This is a code block")
 ```
 
-### Math: 
+### Math:
 
 You can write two types of math:
 

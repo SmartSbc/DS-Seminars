@@ -1,5 +1,5 @@
 ---
-title: "Lecture 4"
+title: "Lecture 3"
 author: "Shiva Chelluri"
 date: "20-01-2025"
 output: pdf_document
@@ -7,14 +7,14 @@ output: pdf_document
 
 # Shrinkage Estimators
 
-## Loading Data set 
+## Loading Data set
 
 ```{r loading_dataset}
-library(tidyverse)
 # glmnet for the conducting ridge and lasso
+# install.packages("glmnet")
 library(glmnet)
-library(readxl)
 
+# loading dataset
 cars <- mtcars
 ```
 
@@ -23,7 +23,7 @@ cars <- mtcars
 ### Splitting the data into train-test
 
 ```{r running_ridge}
-# setting seed
+# setting seed for reproducibility
 set.seed(42)
 
 # splitting the sample into parameters matrix and the target variable
@@ -34,13 +34,14 @@ y <- cars$mpg
 Now we can set $\alpha = 0$, to train on a ridge model as
 
 ```{r train_ridge}
-lambdas <- seq(0.1, 100, by = 0.1)
+# making a ridge model with an arbitrary lambda = 1 as an example
 ridge.mod <- glmnet(x, y, alpha = 0, lambda = 1)
 ```
 
 And you can get the parameter values by the following code:
 
 ```{r min_MSE}
+# getting the coefficients of the model
 coef(ridge.mod)
 ```
 
@@ -48,16 +49,22 @@ But there are far too many parameters to check and see where the lowest MSE is. 
 
 ### K-Fold Cross Validation
 
+We can conduct k-Fold cross validation in using the in-built method called `nfolds=` to declare how many folds do we want in the K-Fold cross validation. I will choose `nfolds=3` as it will randomly split the data into folds of 10 (approximately given that the data set has only 30 observations).
+
 ```{r k_fold_cross_validation}
-ridge.cv <- cv.glmnet(x, y, type.measure = "mse", nfolds = 3, lambda = lambdas, alpha = 0)
+lambda_grid <- seq(0.1, 10, 0.1)
+ridge.cv <- cv.glmnet(x, y, type.measure = "mse", nfolds = 3, 
+                      lambda = lambda_grid, alpha = 0)
 ridge.cv
 ```
 
-So we know the best $\lambda = 0.51$ for the given data. We can plot is as:
+So we know the best $\lambda = 2.1$ (it might different in the LaTeX published version) for the given data. We can plot it using the in-built plot as:
 
 ```{r plotting_ridge}
 plot(ridge.cv, main="Best Lambda for Ridge")
 ```
+
+Then, we can also see how ridge performs shrinkage on the coefficients.
 
 ```{r coefficient_selection}
 plot(ridge.cv$glmnet.fit, xvar="lambda",label = T, main="Subset-Selection of Ridge")
@@ -68,8 +75,9 @@ plot(ridge.cv$glmnet.fit, xvar="lambda",label = T, main="Subset-Selection of Rid
 Will be using the same methodology as before but set $\alpha = 1$ and as the following:
 
 ```{r lasso_fit}
-lambdas <- seq(0.1, 100, by = 0.1)
-lasso.cv <- cv.glmnet(x, y, type.measure = "mse", nfolds = 3, lambda = lambdas, alpha = 1)
+lambda_grid <- seq(0.1, 100, by = 0.1)
+lasso.cv <- cv.glmnet(x, y, type.measure = "mse", nfolds = 3, 
+                      lambda = lambda_grid, alpha = 1)
 plot(lasso.cv, main = "Best Lambda for LASSO")
 ```
 
@@ -79,12 +87,24 @@ Now we can also see by how much what parameters are shrunk:
 plot(lasso.cv$glmnet.fit, xvar="lambda",label = T, main="Subset-Selection of lasso")
 ```
 
-So we can see that Ridge shrinks the coefficients "smoothly" as seen above but LASSO shrinks certain betas to 0.
+So we can see that Ridge shrinks the coefficients "smoothly" as seen few plots above but LASSO shrinks "more roughly" with certain $\beta$ 's to 0 as seen here. (This is due to the modified least-angle regression algorithm but it is not in syllabus)
+
+**NOTE:** The numbers on the top of the plots represent the number of non-zero $\beta$ values. So with high-enough $\lambda$, all the $\beta$s are set to 0. And we can see the main disadvantage of Ridge, that it does not drop any variables and requires $\lambda \rightarrow \infty$.
 
 But the choice in the end of the day the choice of the models depend on the MSE and they are the following:
 
 ```{r MSE_Comparison}
-print(paste0("MSE of Ridge: ", min(ridge.cv$cvm), "  MSE of LASSO: ", min(lasso.cv$cvm)))
+print(paste0("MSE of Ridge: ", min(ridge.cv$cvm)))
+print(paste0("MSE of LASSO: ", min(lasso.cv$cvm)))
 ```
 
-so Ridge performs better in terms of MSE compared to the LASSO.
+so Ridge performs better in terms of MSE compared to the LASSO. (in the iteration I am running but it might not be in the case in your run because of the small sample and exact random sample used.)
+
+Additionally, we can see from the training the exact $\lambda$ that performs the best for both by the following code:
+
+```{r optimal_lambda}
+print(paste0("Optimal Lambda of Ridge: ", ridge.cv$lambda.min))
+print(paste0("Optimal Lambda of LASSO: ", lasso.cv$lambda.min))
+```
+
+So, ridge regression penalizes the coefficient more than the LASSO.
