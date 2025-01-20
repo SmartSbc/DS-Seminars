@@ -1,0 +1,90 @@
+---
+title: "Lecture 4"
+author: "Shiva Chelluri"
+date: "20-01-2025"
+output: pdf_document
+---
+
+# Shrinkage Estimators
+
+## Loading Data set 
+
+```{r loading_dataset}
+library(tidyverse)
+# glmnet for the conducting ridge and lasso
+library(glmnet)
+library(readxl)
+
+cars <- mtcars
+```
+
+## Ridge Regression
+
+### Splitting the data into train-test
+
+```{r running_ridge}
+# setting seed
+set.seed(42)
+
+# splitting the sample into parameters matrix and the target variable
+x <- model.matrix(mpg~., data= cars)[,-1]
+y <- cars$mpg
+```
+
+Now we can set $\alpha = 0$, to train on a ridge model as
+
+```{r train_ridge}
+lambdas <- seq(0.1, 100, by = 0.1)
+ridge.mod <- glmnet(x, y, alpha = 0, lambda = 1)
+```
+
+And you can get the parameter values by the following code:
+
+```{r min_MSE}
+coef(ridge.mod)
+```
+
+But there are far too many parameters to check and see where the lowest MSE is. So we use the K-Cross Fold Validation.
+
+### K-Fold Cross Validation
+
+```{r k_fold_cross_validation}
+ridge.cv <- cv.glmnet(x, y, type.measure = "mse", nfolds = 3, lambda = lambdas, alpha = 0)
+ridge.cv
+```
+
+So we know the best $\lambda = 0.51$ for the given data. We can plot is as:
+
+```{r plotting_ridge}
+plot(ridge.cv, main="Best Lambda for Ridge")
+```
+
+```{r coefficient_selection}
+plot(ridge.cv$glmnet.fit, xvar="lambda",label = T, main="Subset-Selection of Ridge")
+```
+
+## LASSO Regression
+
+Will be using the same methodology as before but set $\alpha = 1$ and as the following:
+
+```{r lasso_fit}
+lambdas <- seq(0.1, 100, by = 0.1)
+lasso.cv <- cv.glmnet(x, y, type.measure = "mse", nfolds = 3, lambda = lambdas, alpha = 1)
+plot(lasso.cv, main = "Best Lambda for LASSO")
+```
+
+Now we can also see by how much what parameters are shrunk:
+
+```{r coef_values}
+plot(lasso.cv$glmnet.fit, xvar="lambda",label = T, main="Subset-Selection of lasso")
+```
+
+So we can see that Ridge shrinks the coefficients "smoothly" as seen above but LASSO shrinks certain betas to 0.
+
+But the choice in the end of the day the choice of the models depend on the MSE and they are the following:
+
+```{r MSE_Comparison}
+print(paste0("MSE of Ridge: ", min(ridge.cv$cvm), "  MSE of LASSO: ", min(lasso.cv$cvm)))
+```
+
+so Ridge performs better in terms of MSE compared to the LASSO.
