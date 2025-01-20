@@ -13,7 +13,7 @@ You can conduct basic math as follows:
 # you can conduct basic math
 x <- 3 + sin(pi/2)
 
-# you can also conduct more complicated mathematical 
+# you can also conduct more complicated mathematical operations
 sqrt(x)
 
 # you can also save strings dynamically
@@ -22,7 +22,7 @@ z <- "word"
 
 ## Sequences:
 
-Sequences are functional in programming such as looping. They can be made using the `seq()` function.
+Sequences are very useful in programming such as looping. They can be made using the `seq()` function.
 
 ```{r}
 v <- seq(1, 10)
@@ -42,7 +42,7 @@ sort(w)
 
 ```
 
-As you can see, `w` itself does not change because the `sort()` function does apply in place. So, to store this newer version, you need to save it again:
+As you can see, `w` itself does not change because the `sort()` function does apply "in place". So, to store this newer version, you need to assign it again:
 
 ```{r}
 w <- sort(w)
@@ -54,7 +54,7 @@ You can also do **indexing over a vector:**
 w[1]
 ```
 
-Note that the indexing in R starts with one and not zero, like in other languages. Additionally, you can conduct scalar multiplications on vectors:
+Note that the indexing in R starts with one and not zero (like in other languages). Additionally, you can conduct scalar multiplications on vectors:
 
 ```{r}
 w*2
@@ -63,7 +63,7 @@ w*2
 You conduct more complex matrix methods such as inner product and matrix multiplications.
 
 ```{r}
-# for doing inner-products
+# the operator for doing inner-products
 w %*% w
 ```
 
@@ -121,7 +121,9 @@ cars <- mpg
 # example ggplot with linear regressions
 ggplot(data = cars) +
   geom_point(mapping = aes(x=displ, y=hwy, xlab= "Display", ylab="Highway"))+
+  # using method="lm" to fit an OLS
   geom_smooth(method = "lm", mapping = aes(x=displ, y=hwy))+
+  # mention the labels although I do not know what the variables mean
   labs(y="Highway", x = "display", title="My first Ggplot2")+
   theme_minimal()
 ```
@@ -154,7 +156,7 @@ print("This is a code block")
 
 You can write two types of math:
 
-1.  Inline math: You do it using "\\\$\\\$" symbols. It works such as $y = mx + c$
+1.  Inline math: You do it using "\$\$" symbols. It works such as $y = mx + c$
 
 2.  MathJAX Block: You can do it using double dollar signs:
 
