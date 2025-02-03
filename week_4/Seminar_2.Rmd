@@ -1,0 +1,21 @@
+# Seminars 1
+
+Loading the `credit.csv` from Introduction to Statistical Learning Resources and all the other required libraries.
+
+```{r loading data set and library}
+library(glmnet)
+library(tidyverse)
+
+data <- read_csv("./Credit.csv")
+```
+
+Now we will use the `%>%` operator to create a pipeline to reformat all the variables to the correct datatypes
+
+```{r re-formatting the data}
+library(dplyr)
+data -> data %>%
+  mutate(Own = as.factor(Own), 
+         Student = as.factor(Student), 
+         Married = as.factor(Married), 
+         Region = as.factor(Region))
+```
