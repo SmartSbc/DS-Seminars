@@ -1,5 +1,9 @@
 # Seminars 1
 
+## Modelling `credit.csv` dataset
+
+### Pre-processing
+
 Loading the `credit.csv` from Introduction to Statistical Learning Resources and all the other required libraries.
 
 ```{r loading data set and library}
@@ -12,10 +16,179 @@ data <- read_csv("./Credit.csv")
 Now we will use the `%>%` operator to create a pipeline to reformat all the variables to the correct datatypes
 
 ```{r re-formatting the data}
-library(dplyr)
-data -> data %>%
+data <- data %>%
   mutate(Own = as.factor(Own), 
          Student = as.factor(Student), 
          Married = as.factor(Married), 
          Region = as.factor(Region))
 ```
+
+Then, we separate the data set randomly into train-test splits:
+
+```{r train-test splits}
+set.seed(42) # as it is the answer to the universe
+# splitting into explanatory and outcome variables
+train <- data %>% sample_frac(0.7)
+test <- anti_join(data, train, by='Income')
+
+# setting the explanatory and target variables
+X_train <- train %>% select(-c('Balance'))
+X_train <- model.matrix(~ . -1, data = X_train)
+X_test <- test %>% select(-c('Balance'))
+X_test <- model.matrix(~ . -1, data = X_test)
+# test sets
+y_train <- train$Balance
+y_test <- test$Balance
+```
+
+### Linear Regression:
+
+We will conduct an OLS as a baseline comparison measure:
+
+```{r linear regression}
+# running OLS
+OLS <- glmnet(x=X_train, y=y_train, alpha = 0, lambda = 0)
+
+# getting predictions:
+OLS_fitted <- predict(OLS, X_train)
+OLS_pred <- predict(OLS, X_test)
+
+# calculating mse:
+OLS_train_MSE <- mean((y_train- OLS_fitted)^2)
+OLS_test_MSE <- mean((y_test - OLS_pred)^2)
+
+# printing results:
+print(paste0("Training sample MSE:", OLS_train_MSE))
+print(paste0("Testing sample MSE:", OLS_test_MSE))
+```
+
+### Ridge Regression
+
+Now, we will conduct a ridge regression with 10-fold cross-validation for an optmised fit.
+
+```{r ridge regression}
+# setting a lambda grid:
+lambda_grid <- seq(0, 100, 0.01)
+ridge.cv <- cv.glmnet(x=X_train, y=y_train, alpha=0,lambda=lambda_grid, nfolds = 10)
+
+# plotting the lambda coefficients
+plot(ridge.cv, main="")
+title("MSE change with lambda", line = 3)
+```
+
+```{r ridge optimum_lambda}
+# plotting and printing optimum function
+print(paste0("The best lambda:", ridge.cv$lambda.1se))
+```
+
+And the coefficients change with lambda as the following:
+
+```{r ridge coef shrinkage}
+# plotting how coefficients change with lambda
+plot(ridge.cv$glmnet.fit, label = TRUE, xvar = "lambda")
+title(main = "Coefficient change with lambda", line = 3)
+```
+
+The coefficients are not set to 0, characteristic of the Ridge, but the good takeaway is that $\lambda = 0.11$. Now, let us perform the train-test split for the optimum ridge model:
+
+```{r optimum ridge}
+# training optimum ridge
+ridge <- glmnet(x=X_train, y=y_train, alpha=0, lambda=15.55)
+
+# getting fitted values
+ridge_fitted <- predict(ridge, X_train)
+ridge_pred <- predict(ridge, X_test)
+
+# calculating mse:
+ridge_train_MSE <- mean((y_train- ridge_fitted)^2)
+ridge_test_MSE <- mean((y_test - ridge_pred)^2)
+
+# printing results:
+print(paste0("Training sample MSE:", ridge_train_MSE))
+print(paste0("Testing sample MSE:", ridge_test_MSE))
+```
+
+We are heading in a good direction because the Ridge is performing better. Let us now look at LASSO.
+
+### LASSO
+
+Let us repeat the same process for the LASSO:
+
+```{r LASSO regression}
+# training lasso
+lasso.cv <- cv.glmnet(x=X_train, y=y_train, alpha=1,lambda=lambda_grid, nfolds=10)
+
+# plotting the lambda coefficients
+plot(lasso.cv, main="")
+title("Coefficient Shrinkage with lambda", line = 3)
+```
+
+```{r ridge optimum_lambda}
+# plotting and printing optimum function 
+print(paste0("The best lambda:", lasso.cv$lambda.1se))
+```
+
+The coefficient changes with lambda as follows:
+
+```{r lasso coef shrinkage}
+# plotting how coefficients change with lambda
+plot(lasso.cv$glmnet.fit, label = TRUE, xvar = "lambda")
+title(main = "Coefficient shrinkage with lambda", line = 3)
+```
+
+The coefficients are set to 0, characteristic of the LASSO, but the good takeaway is that $\lambda = 10.25$. Now, let us perform the train-test split for the optimum LASSO model:
+
+```{r optimum LASSO}
+# training optimum ridge
+lasso <- glmnet(x=X_train, y=y_train, alpha=1, lambda=lasso.cv$lambda.1se)
+
+# getting fitted values
+lasso_fitted <- predict(lasso, X_train)
+lasso_pred <- predict(lasso, X_test)
+
+# calculating mse:
+lasso_train_MSE <- mean((y_train- lasso_fitted)^2)
+lasso_test_MSE <- mean((y_test - lasso_pred)^2)
+
+# printing results:
+print(paste0("Training sample MSE:", lasso_train_MSE))
+print(paste0("Testing sample MSE:", lasso_test_MSE))
+```
+
+It is even more apparent with the LASSO that subset selection improves performance compared to ridge and OLS. Now it is time for the best of both worlds, Elastic-Net.
+
+### Elastic-Net
+
+Elastic-Net involves more work because we also need to choose $\alpha$ and $\lambda$.
+
+```{r elastic-net regression}
+# creating an alpha_grid
+alpha_grid <- seq(0, 100, 0.01)
+
+```
+
+## Problem Set 1:
+
+$$
+RSS = \sum_{m=1}^{n} \sum_{i:X \in R_m} (Y_i - \mu_{i, m})^2
+$$
+
+Then, on taking the first order condition:
+
+$$
+\begin{split}
+\frac{\partial RSS}{\partial\mu_{i, m}} & = -2\sum_{i:X \in R_m}Y_i - \mu_{i, m} = 0 \\
+\end{split}
+$$
+
+Setting it to 0:
+
+$$
+\begin{split}
+\sum_{i:X \in R_m}Y_i - \mu_{i, m} = 0   \\
+\Leftrightarrow  \sum_{i:X \in R_m}Y_i = n_{R_m}\mu_{i, m}
+\\ \Leftrightarrow \frac{1}{n_{R_M}} \sum_{i:X \in R_m}Y_i = \mu_{i, m}
+\end{split}
+$$
+
+Therefore, in a given region the average is the empirical average of all the data points in the given area.
